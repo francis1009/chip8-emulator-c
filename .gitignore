@@ -50,3 +50,17 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Build artifacts
+/bin/
+/build/
+
+# Crash dump files
+*.dmp
+*.stackdump
+
+# Server performance cache
+/.cache/
+
+# IDE and Editor configs
+/.vscode/
