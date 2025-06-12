@@ -48,6 +48,8 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 # Run rules
+run: run-debug
+
 run-debug: debug
 	@echo "--- Running Debug Build with ROM: $(ROM) ---"
 	./$(TARGET_DEBUG) $(ROM)
