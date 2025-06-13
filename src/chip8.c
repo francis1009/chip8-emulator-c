@@ -124,7 +124,9 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 	case 0x5000:
 		break;
 
-	case 0x6000:
+	case 0x6000: // 0x6XNN: Store number NN in register VX
+		chip8->V[(chip8->opcode & 0x0F00) >> 8] = chip8->opcode & 0x00FF;
+		chip8->pc += 2;
 		break;
 
 	case 0x7000:
@@ -178,8 +180,33 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 	case 0xC000:
 		break;
 
-	case 0xD000:
+	case 0xD000: {
+		// DXYN: Draw a sprite at position VX, VY with N bytes of
+		// sprite data starting at the address stored in I
+		// Set VF to 01 if any set pixels are changed to unset, and 00
+		// otherwise
+		unsigned short cx = chip8->V[(chip8->opcode & 0x0F00) >> 8];
+		unsigned short cy = chip8->V[(chip8->opcode & 0x00F0) >> 4];
+		unsigned short height = chip8->opcode & 0x000F;
+		unsigned short pixel;
+
+		chip8->V[0xF] = 0;
+		for (int y = 0; y < height; y++) {
+			pixel = chip8->memory[chip8->I + y];
+			for (int x = 0; x < 8; x++) {
+				if ((pixel & (0x80 >> x)) != 0) {
+					if (chip8->gfx[cx + x + (cy + y) * 64] == 1) {
+						chip8->V[0xF] = 1;
+					}
+					chip8->gfx[cx + x + (cy + y) * 64] ^= 1;
+				}
+			}
+		}
+
+		chip8->draw_flag = true;
+		chip8->pc += 2;
 		break;
+	}
 
 	case 0xE000:
 		switch (chip8->opcode & 0x00FF) {
