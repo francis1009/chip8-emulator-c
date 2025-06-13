@@ -1,13 +1,10 @@
 #include "display.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <string.h>
-#include <wchar.h>
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_video.h>
 
 #include "chip8.h"
 
@@ -56,6 +53,10 @@ bool display_init(void) {
 		renderer = NULL;
 		window = NULL;
 		return false;
+	}
+
+	if (!SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST)) {
+		fprintf(stderr, "Nearest neighbour texture filtering failed to enable.");
 	}
 
 	printf("Display initialized successfully.\n");

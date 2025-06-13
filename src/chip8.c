@@ -89,23 +89,23 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 	switch (chip8->opcode & 0xF000) {
 	case 0x0000:
 		switch (chip8->opcode) {
-		case 0x00E0: // 0x00E0: Clears the screen
+		case 0x00E0: // 00E0: Clears the screen
 			// Execute opcode
 			memset(chip8->gfx, 0, sizeof(chip8->gfx));
 			chip8->draw_flag = true;
 			chip8->pc += 2;
 			break;
 
-		case 0x00EE: // 0x00EE: Returns from subroutine
+		case 0x00EE: // 00EE: Returns from subroutine
 			break;
 
-		default: // 0x0NNN: Execute machine language subroutine at address NNN
+		default: // 0NNN: Execute machine language subroutine at address NNN
 			printf("Ignoring SYS opcode: 0x%X\n", chip8->opcode); // Skip opcode
 			chip8->pc += 2;
 		}
 		break;
 
-	case 0x1000: // 0x1NNN: Jump to address NNN
+	case 0x1000: // 1NNN: Jump to address NNN
 		chip8->pc = chip8->opcode & 0x0FFF;
 		break;
 
@@ -124,12 +124,14 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 	case 0x5000:
 		break;
 
-	case 0x6000: // 0x6XNN: Store number NN in register VX
+	case 0x6000: // 6XNN: Store number NN in register VX
 		chip8->V[(chip8->opcode & 0x0F00) >> 8] = chip8->opcode & 0x00FF;
 		chip8->pc += 2;
 		break;
 
-	case 0x7000:
+	case 0x7000: // 7XNN: Add the value NN to register VX
+		chip8->V[(chip8->opcode & 0x0F00) >> 8] += chip8->opcode & 0x00FF;
+		chip8->pc += 2;
 		break;
 
 	case 0x8000:
