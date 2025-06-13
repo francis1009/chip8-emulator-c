@@ -11,8 +11,8 @@ CFLAGS_RELEASE = -O2 -DNDEBUG -flto
 LDFLAGS = -lSDL3
 
 # Default ROM to run
-# Usage: make run-debug ROM=roms/TETRIS
-# ROM ?= roms/PONG
+# Usage: make run-debug ROM=TETRIS
+ROM ?= PONG
 
 # Project structure
 BUILD_DIR = bin

@@ -1,5 +1,6 @@
 #include "chip8.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -43,7 +44,39 @@ void chip8_init(Chip8 *chip8) {
 	chip8->draw_flag = 1;
 }
 
-void chip8_load_rom(Chip8 *char8, const char *filename) {
+void chip8_load_rom(Chip8 *chip8, const char *filename) {
+	char full_path[256];
+	int result = snprintf(full_path, sizeof(full_path), "roms/%s", filename);
+	if (result < 0 || result >= (int) sizeof(full_path)) {
+		fprintf(stderr, "Error: ROM filename is too long.\n");
+		return;
+	}
+
+	FILE *file = fopen(full_path, "rb");
+	if (file == NULL) {
+		perror("Error opening ROM file\n");
+		return;
+	}
+
+	fseek(file, 0, SEEK_END);
+	long rom_size = ftell(file);
+	rewind(file);
+	if (rom_size > 4096 - 512) {
+		fprintf(stderr, "Error: ROM file size (%ld bytes) is too large.\n",
+						rom_size);
+		fclose(file);
+		return;
+	}
+
+	size_t bytes_read = fread(&chip8->memory[512], 1, rom_size, file);
+	if (bytes_read != (size_t) rom_size) {
+		fprintf(stderr, "Error while reading ROM file.\n");
+		fclose(file);
+		return;
+	}
+
+	fclose(file);
+	printf("Successfully loaded ROM: %s (%ld bytes)\n", filename, rom_size);
 }
 
 void chip8_emulate_cycle(Chip8 *chip8) {
