@@ -218,12 +218,15 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 								 // Set register VF to the least significant bit prior to the
 								 // shift
 								 // VY is unchanged
+		{
 			chip8->V[(chip8->opcode & 0x0F00) >> 8] =
 					chip8->V[(chip8->opcode & 0x00F0) >> 4];
-			chip8->V[0xF] = chip8->V[(chip8->opcode & 0x0F00) >> 8] & 0x0001;
+			unsigned char lsb = chip8->V[(chip8->opcode & 0x0F00) >> 8] & 0x01;
 			chip8->V[(chip8->opcode & 0x0F00) >> 8] >>= 1;
+			chip8->V[0xF] = lsb;
 			chip8->pc += 2;
 			break;
+		}
 
 		case 0x0007: // 8XY7: Set register VX to the value of VY minus VX
 								 // Set VF to 00 if a borrow occurs
@@ -247,12 +250,15 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 								 // Set register VF to the most significant bit prior to the
 								 // shift
 								 // VY is unchanged
+		{
 			chip8->V[(chip8->opcode & 0x0F00) >> 8] =
 					chip8->V[(chip8->opcode & 0x00F0) >> 4];
-			chip8->V[0xF] = chip8->V[(chip8->opcode & 0x0F00) >> 8] & 0x8000;
+			unsigned char msb = (chip8->V[(chip8->opcode & 0x0F00) >> 8] & 0x80) >> 7;
 			chip8->V[(chip8->opcode & 0x0F00) >> 8] <<= 1;
+			chip8->V[0xF] = msb;
 			chip8->pc += 2;
 			break;
+		}
 
 		default:
 			printf("Unknown opcode [0x8000]: 0x%X\n", chip8->opcode);
