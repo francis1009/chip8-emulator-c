@@ -51,7 +51,7 @@ A C toolchain, the SDL3 development library, and Bear must be installed.
 1.  **Clone the repository:**
 
     ```sh
-    git clone https://github.com/your_username/chip8-emulator-c.git
+    git clone https://github.com/francis1009/chip8-emulator-c.git
     cd chip8-emulator-c
     ```
 
