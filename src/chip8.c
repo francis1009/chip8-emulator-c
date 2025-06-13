@@ -97,6 +97,9 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 			break;
 
 		case 0x00EE: // 00EE: Returns from subroutine
+			chip8->sp--;
+			chip8->pc = chip8->stack[chip8->sp];
+			chip8->pc += 2;
 			break;
 
 		default: // 0NNN: Execute machine language subroutine at address NNN
@@ -115,13 +118,29 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 		chip8->pc = chip8->opcode & 0x0FFF;
 		break;
 
-	case 0x3000:
+	case 0x3000: // 3XNN: Skip the following instruction if the value of register
+							 // VX equals NN
+		if (chip8->V[(chip8->opcode & 0x0F00) >> 8] == (chip8->opcode & 0x00FF)) {
+			chip8->pc += 2;
+		}
+		chip8->pc += 2;
 		break;
 
-	case 0x4000:
+	case 0x4000: // 4XNN: Skip the following instruction if the value of register
+		// VX is not equal to NN
+		if (chip8->V[(chip8->opcode & 0x0F00) >> 8] != (chip8->opcode & 0x00FF)) {
+			chip8->pc += 2;
+		}
+		chip8->pc += 2;
 		break;
 
-	case 0x5000:
+	case 0x5000: // 5XY0: Skip the following instruction if the value of register
+							 // VX is equal to the value of register VY
+		if (chip8->V[(chip8->opcode & 0x0F00) >> 8] ==
+				chip8->V[(chip8->opcode & 0x00F0) >> 4]) {
+			chip8->pc += 2;
+		}
+		chip8->pc += 2;
 		break;
 
 	case 0x6000: // 6XNN: Store number NN in register VX
@@ -168,7 +187,13 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 		}
 		break;
 
-	case 0x9000:
+	case 0x9000: // 9XY0: Skip the following instruction if the value of register
+							 // VX is not equal to the value of register VY
+		if (chip8->V[(chip8->opcode & 0x0F00) >> 8] !=
+				chip8->V[(chip8->opcode & 0x00F0) >> 4]) {
+			chip8->pc += 2;
+		}
+		chip8->pc += 2;
 		break;
 
 	case 0xA000: // ANNN: Store memory address NNN in register I
@@ -182,11 +207,11 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 	case 0xC000:
 		break;
 
-	case 0xD000: {
-		// DXYN: Draw a sprite at position VX, VY with N bytes of
-		// sprite data starting at the address stored in I
-		// Set VF to 01 if any set pixels are changed to unset, and 00
-		// otherwise
+	case 0xD000: // DXYN: Draw a sprite at position VX, VY with N bytes of
+							 // sprite data starting at the address stored in I
+							 // Set VF to 01 if any set pixels are changed to unset, and 00
+							 // otherwise
+	{
 		unsigned short cx = chip8->V[(chip8->opcode & 0x0F00) >> 8];
 		unsigned short cy = chip8->V[(chip8->opcode & 0x00F0) >> 4];
 		unsigned short height = chip8->opcode & 0x000F;

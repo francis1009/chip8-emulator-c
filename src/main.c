@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 			chip8.draw_flag = false;
 		}
 
-		SDL_Delay(100);
+		SDL_Delay(10);
 	}
 
 	display_destroy();
