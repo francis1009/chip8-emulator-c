@@ -55,6 +55,9 @@ dkms.conf
 /bin/
 /build/
 
+# Build system files
+compile_commands.json
+
 # Crash dump files
 *.dmp
 *.stackdump

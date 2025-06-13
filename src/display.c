@@ -14,7 +14,7 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
-bool display_init() {
+bool display_init(void) {
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
 		fprintf(stderr, "Error initializing SDL: %s\n", SDL_GetError());
 		return false;
@@ -46,7 +46,7 @@ void display_draw(const Chip8 *chip8) {
 	SDL_RenderPresent(renderer);
 }
 
-void display_destroy() {
+void display_destroy(void) {
 	SDL_DestroyRenderer(renderer);
 	renderer = NULL;
 	SDL_DestroyWindow(window);

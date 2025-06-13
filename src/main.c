@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
 
 	while (is_running) {
 		process_input(&chip8, &is_running);
-
 		chip8_emulate_cycle(&chip8);
 
 		if (chip8.draw_flag) {

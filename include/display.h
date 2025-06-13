@@ -5,8 +5,8 @@
 
 #include "chip8.h"
 
-bool display_init();
+bool display_init(void);
 void display_draw(const Chip8 *chip8);
-void display_destroy();
+void display_destroy(void);
 
 #endif
