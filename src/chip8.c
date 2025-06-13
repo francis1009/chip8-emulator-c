@@ -155,31 +155,103 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 
 	case 0x8000:
 		switch (chip8->opcode & 0x000F) {
-		case 0x0000:
+		case 0x0000: // 8XY0: Store the value of register VY in register VX
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] =
+					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->pc += 2;
 			break;
 
-		case 0x0001:
+		case 0x0001: // 8XY1: Set VX to VX OR VY
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] |=
+					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->pc += 2;
 			break;
 
-		case 0x0002:
+		case 0x0002: // 8XY2: Set VX to VX AND VY
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] &=
+					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->pc += 2;
 			break;
 
-		case 0x0003:
+		case 0x0003: // 8XY3: Set VX to VX XOR VY
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] ^=
+					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->pc += 2;
 			break;
 
-		case 0x0004:
+		case 0x0004: // 8XY4: Add the value of register VY to register VX
+								 // Set VF to 01 if a carry occurs
+								 // Set VF to 00 if a carry does not occur
+		{
+			unsigned char vx = (chip8->opcode & 0x0F00) >> 8;
+			unsigned char vy = (chip8->opcode & 0x00F0) >> 4;
+			unsigned short sum = chip8->V[vx] + chip8->V[vy];
+
+			chip8->V[vx] = sum & 0xFF;
+			chip8->V[0xF] = 0;
+			if (sum > 255) {
+				chip8->V[0xF] = 1;
+			}
+			chip8->pc += 2;
+			break;
+		}
+
+		case 0x0005: // 8XY5: Subtract the value of register VY from register VX
+								 // Set VF to 00 if a borrow occurs
+								 // Set VF to 01 if a borrow does not occur
+		{
+			unsigned char vx = (chip8->opcode & 0x0F00) >> 8;
+			unsigned char vy = (chip8->opcode & 0x00F0) >> 4;
+			signed short diff = chip8->V[vx] - chip8->V[vy];
+
+			chip8->V[vx] = diff & 0xFF;
+			chip8->V[0xF] = 1;
+			if (diff < 0) {
+				chip8->V[0xF] = 0;
+			}
+			chip8->pc += 2;
+			break;
+		}
+
+		case 0x0006: // 8XY6: Store the value of register VY shifted right one bit
+								 // in register VX
+								 // Set register VF to the least significant bit prior to the
+								 // shift
+								 // VY is unchanged
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] =
+					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->V[0xF] = chip8->V[(chip8->opcode & 0x0F00) >> 8] & 0x0001;
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] >>= 1;
+			chip8->pc += 2;
 			break;
 
-		case 0x0005:
-			break;
+		case 0x0007: // 8XY7: Set register VX to the value of VY minus VX
+								 // Set VF to 00 if a borrow occurs
+								 // Set VF to 01 if a borrow does not occur
+		{
+			unsigned char vx = (chip8->opcode & 0x0F00) >> 8;
+			unsigned char vy = (chip8->opcode & 0x00F0) >> 4;
+			signed short diff = chip8->V[vy] - chip8->V[vx];
 
-		case 0x0006:
+			chip8->V[vx] = diff & 0xFF;
+			chip8->V[0xF] = 1;
+			if (diff < 0) {
+				chip8->V[0xF] = 0;
+			}
+			chip8->pc += 2;
 			break;
+		}
 
-		case 0x0007:
-			break;
-
-		case 0x000E:
+		case 0x000E: // 8XYE: Store the value of register VY shifted left one bit
+								 // in register VX
+								 // Set register VF to the most significant bit prior to the
+								 // shift
+								 // VY is unchanged
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] =
+					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->V[0xF] = chip8->V[(chip8->opcode & 0x0F00) >> 8] & 0x8000;
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] <<= 1;
+			chip8->pc += 2;
 			break;
 
 		default:
@@ -262,20 +334,51 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 		case 0x0018:
 			break;
 
-		case 0x001E:
+		case 0x001E: // FX1E: Add the value stored in register VX to register I
+			chip8->I += chip8->V[(chip8->opcode & 0x0F00) >> 8];
+			chip8->pc += 2;
 			break;
 
 		case 0x0029:
 			break;
 
-		case 0x0033:
+		case 0x0033: // FX33: Store the binary-coded decimal equivalent of the value
+								 // stored in register VX at addresses I, I + 1, and I + 2
+		{
+			unsigned char value = chip8->V[(chip8->opcode & 0x0F00) >> 8];
+			for (int i = 2; i >= 0; i--) {
+				chip8->memory[chip8->I + i] = value % 10;
+				value /= 10;
+			}
+			chip8->pc += 2;
 			break;
+		}
 
-		case 0x0055:
+		case 0x0055: // FX55: Store the values of registers V0 to VX inclusive in
+								 // memory starting at address I I is set to I + X + 1 after
+								 // operation
+		{
+			unsigned char num_registers = (chip8->opcode & 0x0F00) >> 8;
+			for (int i = 0; i <= num_registers; i++) {
+				chip8->memory[chip8->I + i] = chip8->V[i];
+			}
+			chip8->I += num_registers + 1;
+			chip8->pc += 2;
 			break;
+		}
 
-		case 0x0065:
+		case 0x0065: // FX65: Fill registers V0 to VX inclusive with the values
+								 // stored in memory starting at address I
+								 // I is set to I + X + 1 after operation
+		{
+			unsigned char num_registers = (chip8->opcode & 0x0F00) >> 8;
+			for (int i = 0; i <= num_registers; i++) {
+				chip8->V[i] = chip8->memory[chip8->I + i];
+			}
+			chip8->I += num_registers + 1;
+			chip8->pc += 2;
 			break;
+		}
 
 		default:
 			printf("Unknown opcode [0xF000]: 0x%X\n", chip8->opcode);
