@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
 		if (chip8.draw_flag) {
 			display_draw(&chip8);
-			// chip8.draw_flag = false;
+			chip8.draw_flag = false;
 		}
 
 		SDL_Delay(100);

@@ -1,5 +1,6 @@
 #include "chip8.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +34,7 @@ void chip8_init(Chip8 *chip8) {
 	memset(chip8->stack, 0, sizeof(chip8->stack));
 	memset(chip8->V, 0, sizeof(chip8->V));
 	memset(chip8->memory, 0, sizeof(chip8->memory));
+	memset(chip8->key, 0, sizeof(chip8->key));
 
 	for (int i = 0; i < 80; ++i) {
 		chip8->memory[i] = chip8_fontset[i];
@@ -85,10 +87,145 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 
 	// Decode opcode
 	switch (chip8->opcode & 0xF000) {
-	case 0xA000: // ANNN: Sets I to the address NNN
-		// Execute opcode
+	case 0x0000:
+		switch (chip8->opcode) {
+		case 0x00E0: // 0x00E0: Clears the screen
+			// Execute opcode
+			memset(chip8->gfx, 0, sizeof(chip8->gfx));
+			chip8->draw_flag = true;
+			chip8->pc += 2;
+			break;
+
+		case 0x00EE: // 0x00EE: Returns from subroutine
+			break;
+
+		default: // 0x0NNN: Execute machine language subroutine at address NNN
+			printf("Ignoring SYS opcode: 0x%X\n", chip8->opcode); // Skip opcode
+			chip8->pc += 2;
+		}
+		break;
+
+	case 0x1000: // 0x1NNN: Jump to address NNN
+		chip8->pc = chip8->opcode & 0x0FFF;
+		break;
+
+	case 0x2000: // 2NNN: Execute subroutine starting at address NNN
+		chip8->stack[chip8->sp] = chip8->pc;
+		chip8->sp++;
+		chip8->pc = chip8->opcode & 0x0FFF;
+		break;
+
+	case 0x3000:
+		break;
+
+	case 0x4000:
+		break;
+
+	case 0x5000:
+		break;
+
+	case 0x6000:
+		break;
+
+	case 0x7000:
+		break;
+
+	case 0x8000:
+		switch (chip8->opcode & 0x000F) {
+		case 0x0000:
+			break;
+
+		case 0x0001:
+			break;
+
+		case 0x0002:
+			break;
+
+		case 0x0003:
+			break;
+
+		case 0x0004:
+			break;
+
+		case 0x0005:
+			break;
+
+		case 0x0006:
+			break;
+
+		case 0x0007:
+			break;
+
+		case 0x000E:
+			break;
+
+		default:
+			printf("Unknown opcode [0x8000]: 0x%X\n", chip8->opcode);
+		}
+		break;
+
+	case 0x9000:
+		break;
+
+	case 0xA000: // ANNN: Store memory address NNN in register I
 		chip8->I = chip8->opcode & 0x0FFF;
 		chip8->pc += 2;
+		break;
+
+	case 0xB000:
+		break;
+
+	case 0xC000:
+		break;
+
+	case 0xD000:
+		break;
+
+	case 0xE000:
+		switch (chip8->opcode & 0x00FF) {
+		case 0x009E:
+			break;
+
+		case 0x00A1:
+			break;
+
+		default:
+			printf("Unknown opcode [0xE000]: 0x%X\n", chip8->opcode);
+		}
+		break;
+
+	case 0xF000:
+		switch (chip8->opcode & 0x00FF) {
+		case 0x0007:
+			break;
+
+		case 0x000A:
+			break;
+
+		case 0x0015:
+			break;
+
+		case 0x0018:
+			break;
+
+		case 0x001E:
+			break;
+
+		case 0x0029:
+			break;
+
+		case 0x0033:
+			break;
+
+		case 0x0055:
+			break;
+
+		case 0x0065:
+			break;
+
+		default:
+			printf("Unknown opcode [0xF000]: 0x%X\n", chip8->opcode);
+		}
 		break;
 
 	default:
