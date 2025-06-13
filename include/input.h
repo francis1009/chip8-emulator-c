@@ -1,9 +1,10 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include <stdbool.h>
+
 #include "chip8.h"
 
-void keyboard_down(const Chip8 *chip8);
-void keyboard_up(const Chip8 *chip8);
+void process_input(Chip8 *chip8, bool *is_running);
 
 #endif

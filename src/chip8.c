@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-unsigned char chip8_fontset[80] = {
+const unsigned char chip8_fontset[80] = {
 		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 		0x20, 0x60, 0x20, 0x20, 0x70, // 1
 		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -39,12 +39,14 @@ void chip8_init(Chip8 *chip8) {
 
 	chip8->delay_timer = 0;
 	chip8->sound_timer = 0;
+
+	chip8->draw_flag = 1;
 }
 
-void load_rom(Chip8 *char8, const char *filename) {
+void chip8_load_rom(Chip8 *char8, const char *filename) {
 }
 
-void emulate_cycle(Chip8 *chip8) {
+void chip8_emulate_cycle(Chip8 *chip8) {
 	// Fetch opcode
 	chip8->opcode = chip8->memory[chip8->pc] << 8 | chip8->memory[chip8->pc + 1];
 
@@ -69,7 +71,4 @@ void emulate_cycle(Chip8 *chip8) {
 			printf("BEEP!\n");
 		--chip8->sound_timer;
 	}
-}
-
-void set_keys(Chip8 *chip8) {
 }
