@@ -30,7 +30,6 @@ void process_input(Chip8 *chip8, bool *is_running) {
 
 		// Handle key being pressed down
 		case SDL_EVENT_KEY_DOWN:
-			printf("Key Down Scancode: 0x%x\n", event.key.scancode);
 			// Quit program if 'Esc' key is pressed
 			if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
 				*is_running = false;

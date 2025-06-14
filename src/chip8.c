@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 const unsigned char chip8_fontset[80] = {
@@ -164,18 +165,21 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 		case 0x0001: // 8XY1: Set VX to VX OR VY
 			chip8->V[(chip8->opcode & 0x0F00) >> 8] |=
 					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->V[0xF] = 0;
 			chip8->pc += 2;
 			break;
 
 		case 0x0002: // 8XY2: Set VX to VX AND VY
 			chip8->V[(chip8->opcode & 0x0F00) >> 8] &=
 					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->V[0xF] = 0;
 			chip8->pc += 2;
 			break;
 
 		case 0x0003: // 8XY3: Set VX to VX XOR VY
 			chip8->V[(chip8->opcode & 0x0F00) >> 8] ^=
 					chip8->V[(chip8->opcode & 0x00F0) >> 4];
+			chip8->V[0xF] = 0;
 			chip8->pc += 2;
 			break;
 
@@ -279,11 +283,18 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 		chip8->pc += 2;
 		break;
 
-	case 0xB000:
+	case 0xB000: // BNNN: Jump to address NNN + V0
+		chip8->pc = (chip8->opcode & 0x0FFF) + chip8->V[0x0];
 		break;
 
-	case 0xC000:
+	case 0xC000: // CXNN: Set VX to a random number with a mask of NN
+	{
+		unsigned char random_number = rand();
+		chip8->V[(chip8->opcode & 0x0F00) >> 8] =
+				random_number & (chip8->opcode * 0x00FF);
+		chip8->pc += 2;
 		break;
+	}
 
 	case 0xD000: // DXYN: Draw a sprite at position VX, VY with N bytes of
 							 // sprite data starting at the address stored in I
@@ -296,14 +307,38 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 		unsigned short pixel;
 
 		chip8->V[0xF] = 0;
-		for (int y = 0; y < height; y++) {
-			pixel = chip8->memory[chip8->I + y];
-			for (int x = 0; x < 8; x++) {
-				if ((pixel & (0x80 >> x)) != 0) {
-					if (chip8->gfx[cx + x + (cy + y) * 64] == 1) {
-						chip8->V[0xF] = 1;
+
+		// Clip if partial sprite out of screen
+		if (cx < 64 && cy < 32) {
+			for (int y = 0; y < height; y++) {
+				pixel = chip8->memory[chip8->I + y];
+				if (cy + y >= 32) {
+					continue;
+				}
+				for (int x = 0; x < 8; x++) {
+					if (cx + x >= 64) {
+						continue;
 					}
-					chip8->gfx[cx + x + (cy + y) * 64] ^= 1;
+					if ((pixel & (0x80 >> x)) != 0) {
+						if (chip8->gfx[(cx + x) + (cy + y) * 64] == 1) {
+							chip8->V[0xF] = 1;
+						}
+						chip8->gfx[(cx + x) + (cy + y) * 64] ^= 1;
+					}
+				}
+			}
+
+			// Wrap if whole sprite out of screen
+		} else {
+			for (int y = 0; y < height; y++) {
+				pixel = chip8->memory[chip8->I + y];
+				for (int x = 0; x < 8; x++) {
+					if ((pixel & (0x80 >> x)) != 0) {
+						if (chip8->gfx[(cx + x) % 64 + ((cy + y) % 32) * 64] == 1) {
+							chip8->V[0xF] = 1;
+						}
+						chip8->gfx[(cx + x) % 64 + ((cy + y) % 32) * 64] ^= 1;
+					}
 				}
 			}
 		}
@@ -315,11 +350,29 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 
 	case 0xE000:
 		switch (chip8->opcode & 0x00FF) {
-		case 0x009E:
+		case 0x009E: // EX9E: Skip the following instruction if the key
+								 // corresponding to the hex value currently stored in register
+								 // VX is pressed
+		{
+			unsigned char key = chip8->V[(chip8->opcode & 0x0F00) >> 8];
+			if (chip8->key[key] == 1) {
+				chip8->pc += 2;
+			}
+			chip8->pc += 2;
 			break;
+		}
 
-		case 0x00A1:
+		case 0x00A1: // EXA1: Skip the following instruction if the key
+								 // corresponding to the hex value currently stored in register
+								 // VX is not pressed
+		{
+			unsigned char key = chip8->V[(chip8->opcode & 0x0F00) >> 8];
+			if (chip8->key[key] == 0) {
+				chip8->pc += 2;
+			}
+			chip8->pc += 2;
 			break;
+		}
 
 		default:
 			printf("Unknown opcode [0xE000]: 0x%X\n", chip8->opcode);
@@ -328,16 +381,36 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 
 	case 0xF000:
 		switch (chip8->opcode & 0x00FF) {
-		case 0x0007:
+		case 0x0007: // FX07: Store the current value of the delay timer in register
+								 // VX
+			chip8->V[(chip8->opcode & 0x0F00) >> 8] = chip8->delay_timer;
+			chip8->pc += 2;
 			break;
 
-		case 0x000A:
+		case 0x000A: // FX0A: Wait for a keypress and store the result in register
+								 // VX
+		{
+			bool key_pressed = false; // TODO
+			for (int i = 0; i < 16; i++) {
+				if (chip8->key[i] == 1) {
+					key_pressed = true;
+				} else if (key_pressed) {
+					key_pressed = false;
+					chip8->V[(chip8->opcode & 0x0F00) >> 8] = i;
+					chip8->pc += 2;
+				}
+			}
+			break;
+		}
+
+		case 0x0015: // FX15: Set the delay timer to the value of register VX
+			chip8->delay_timer = chip8->V[(chip8->opcode & 0x0F00) >> 8];
+			chip8->pc += 2;
 			break;
 
-		case 0x0015:
-			break;
-
-		case 0x0018:
+		case 0x0018: // FX18: Set the sound timer to the value of register VX
+			chip8->sound_timer = chip8->V[(chip8->opcode & 0x0F00) >> 8];
+			chip8->pc += 2;
 			break;
 
 		case 0x001E: // FX1E: Add the value stored in register VX to register I
@@ -345,8 +418,14 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 			chip8->pc += 2;
 			break;
 
-		case 0x0029:
+		case 0x0029: // FX29: Set I to the memory address of the sprite data
+								 // corresponding to the hexadecimal digit stored in register VX
+		{
+			unsigned char font = chip8->V[(chip8->opcode & 0x0F00) >> 8] & 0x0F;
+			chip8->I = font * 5;
+			chip8->pc += 2;
 			break;
+		}
 
 		case 0x0033: // FX33: Store the binary-coded decimal equivalent of the value
 								 // stored in register VX at addresses I, I + 1, and I + 2
@@ -394,7 +473,9 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 	default:
 		printf("Unknown opcode: 0x%X\n", chip8->opcode);
 	}
+}
 
+void chip8_update_timers(Chip8 *chip8) {
 	// Update timers
 	if (chip8->delay_timer > 0) {
 		chip8->delay_timer--;

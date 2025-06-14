@@ -7,6 +7,10 @@
 #include "display.h"
 #include "input.h"
 
+const int TARGET_FPS = 60;
+const float FRAME_DURATION_MS = 1000.0f / TARGET_FPS;
+const int CYCLES_PER_FRAME = 8;
+
 int main(int argc, char **argv) {
 	if (argc < 2) {
 		fprintf(stderr, "Usage: %s <rom_file_name>\n", argv[0]);
@@ -27,15 +31,24 @@ int main(int argc, char **argv) {
 	chip8_load_rom(&chip8, rom_filename);
 
 	while (is_running) {
+		Uint64 frame_start_time = SDL_GetTicks();
+
 		process_input(&chip8, &is_running);
-		chip8_emulate_cycle(&chip8);
+		for (int i = 0; i < CYCLES_PER_FRAME; i++) {
+			chip8_emulate_cycle(&chip8);
+		}
+		chip8_update_timers(&chip8);
 
 		if (chip8.draw_flag) {
 			display_draw(&chip8);
 			chip8.draw_flag = false;
 		}
 
-		SDL_Delay(10);
+		Uint64 frame_end_time = SDL_GetTicks();
+		float elapsed_ms = (float) (frame_end_time - frame_start_time);
+		if (elapsed_ms < FRAME_DURATION_MS) {
+			SDL_Delay((Uint32) (FRAME_DURATION_MS - elapsed_ms));
+		}
 	}
 
 	display_destroy();
