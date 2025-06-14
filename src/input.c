@@ -1,7 +1,5 @@
 #include "input.h"
 
-#include <stdio.h>
-
 #include <SDL3/SDL.h>
 
 #include "chip8.h"

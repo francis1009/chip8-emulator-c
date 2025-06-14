@@ -65,10 +65,13 @@ bool display_init(void) {
 
 void display_draw(const Chip8 *chip8) {
 	for (int i = 0; i < 2048; ++i) {
+		// Summer Beach Day Palette
 		if (chip8->gfx[i]) {
-			pixel_buffer[i] = 0xFFFFFFFF; // White (A=FF, R=FF, G=FF, B=FF)
+			// Foreground: Deep Sea Blue
+			pixel_buffer[i] = 0xFF006994;
 		} else {
-			pixel_buffer[i] = 0xFF000000; // Black (A=FF, R=00, G=00, B=00)
+			// Background: Sandy Beige
+			pixel_buffer[i] = 0xFFF4E8D1;
 		}
 	}
 	SDL_UpdateTexture(texture, NULL, pixel_buffer, 64 * sizeof(uint32_t));
@@ -81,7 +84,6 @@ void display_destroy(void) {
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
-	SDL_Quit();
 	printf("Display destroyed.\n");
 
 	texture = NULL;

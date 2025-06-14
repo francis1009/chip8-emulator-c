@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 
+#include "audio.h"
 #include "chip8.h"
 #include "display.h"
 #include "input.h"
@@ -23,6 +24,15 @@ int main(int argc, char **argv) {
 	bool is_running = display_init();
 	if (!is_running) {
 		fprintf(stderr, "Error: Failed to initialize display. Exiting.\n");
+		SDL_Quit();
+		return 1;
+	}
+
+	bool audio_on = audio_init();
+	if (!audio_on) {
+		fprintf(stderr, "Error: Failed to initialize audio. Exiting.\n");
+		display_destroy();
+		SDL_Quit();
 		return 1;
 	}
 
@@ -51,6 +61,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	audio_destroy();
 	display_destroy();
+	SDL_Quit();
 	return 0;
 }
