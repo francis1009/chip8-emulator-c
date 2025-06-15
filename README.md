@@ -98,7 +98,7 @@ All subsequent commands should be run from within the **MSYS2 MINGW64 terminal**
 
 The emulator is run from the command line using the provided `Makefile` targets.
 
-- **Run with the default ROM (PONG):**
+- **Run with the default ROM (Octojam 9 Title):**
 
   ```sh
   make run-debug
