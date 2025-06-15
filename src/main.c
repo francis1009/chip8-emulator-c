@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <SDL3/SDL.h>
 
@@ -14,6 +16,8 @@ const float FRAME_DURATION_MS = 1000.0f / TARGET_FPS;
 const int CYCLES_PER_FRAME = 8;
 
 int main(int argc, char **argv) {
+	srand(time(NULL));
+
 	if (argc < 2) {
 		fprintf(stderr, "Usage: %s <rom_file_name>\n", argv[0]);
 		return 1;

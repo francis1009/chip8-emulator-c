@@ -292,9 +292,9 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 
 	case 0xC000: // CXNN: Set VX to a random number with a mask of NN
 	{
-		unsigned char random_number = rand();
+		unsigned char random_number = rand() % 256;
 		chip8->V[(chip8->opcode & 0x0F00) >> 8] =
-				random_number & (chip8->opcode * 0x00FF);
+				random_number & (chip8->opcode & 0x00FF);
 		chip8->pc += 2;
 		break;
 	}
