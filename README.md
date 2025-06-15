@@ -103,9 +103,9 @@ The emulator is run from the command line using the provided `Makefile` targets.
   ```
 
 - **Run with a specific ROM:**
-  The `ROM` variable should be the filename only. The program automatically searches in the `roms/` directory.
+  The `ROM` variable should be the filepath to the ROM. The program automatically searches in the `roms/` directory.
   ```sh
-  make run-debug ROM=TETRIS
+  make run-debug ROM=chip8/octojam9title.ch8
   ```
 
 ---
@@ -123,4 +123,5 @@ This project would not have been possible without the excellent resources provid
 - **Tobias V. Langhoff's Blog - [Guide to making a CHIP-8 emulator ](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/):** Provided a clear, high-level overview of the CHIP-8 architecture and a fantastic reference for the main emulation loop structure.
 - **Laurence Muller's Emulator Guide - [How to write an emulator (CHIP-8 interpreter)](https://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/):** An invaluable resource for detailed, step-by-step explanations of the Chip-8 emulator and the system's inner workings.
 - **Timendus's CHIP-8 Test Suite - [chip8-test-suite](https://github.com/Timendus/chip8-test-suite):** The definitive test suite for verifying the correctness of an emulator's opcode implementations.
+- **John Earnest's Chip-8 Archive - [chip8Archive](https://johnearnest.github.io/chip8Archive/):** An essential collection of public domain ROMs used for testing and demonstration.
 - **The Official SDL Wiki - [wiki.libsdl.org](https://wiki.libsdl.org/):** The primary source of documentation for the SDL3 library, essential for implementing the graphics, input, and audio platform layer.

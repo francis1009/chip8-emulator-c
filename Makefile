@@ -11,8 +11,8 @@ CFLAGS_RELEASE = -O2 -DNDEBUG -flto
 LDFLAGS = -lSDL3
 
 # Default ROM to run
-# Usage: make run-debug ROM=TETRIS
-ROM ?= PONG
+# Usage: make run-debug ROM=chip8/glitchGhost.ch8
+ROM ?= chip8/octojam9title.ch8
 
 # Project structure
 BUILD_DIR = bin
