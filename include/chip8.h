@@ -36,6 +36,7 @@ typedef struct {
 
 	// HEX-based keypad (0x0 - 0xF)
 	unsigned char key[16];
+	unsigned char key_prev[16];
 } Chip8;
 
 extern const unsigned char chip8_fontset[80];

@@ -38,6 +38,7 @@ void chip8_init(Chip8 *chip8) {
 	memset(chip8->V, 0, sizeof(chip8->V));
 	memset(chip8->memory, 0, sizeof(chip8->memory));
 	memset(chip8->key, 0, sizeof(chip8->key));
+	memset(chip8->key_prev, 0, sizeof(chip8->key_prev));
 
 	for (int i = 0; i < 80; ++i) {
 		chip8->memory[i] = chip8_fontset[i];
@@ -392,14 +393,11 @@ void chip8_emulate_cycle(Chip8 *chip8) {
 		case 0x000A: // FX0A: Wait for a keypress and store the result in register
 								 // VX
 		{
-			bool key_pressed = false; // TODO
 			for (int i = 0; i < 16; i++) {
-				if (chip8->key[i] == 1) {
-					key_pressed = true;
-				} else if (key_pressed) {
-					key_pressed = false;
+				if (chip8->key[i] == 0 && chip8->key_prev[i] == 1) {
 					chip8->V[(chip8->opcode & 0x0F00) >> 8] = i;
 					chip8->pc += 2;
+					break;
 				}
 			}
 			break;

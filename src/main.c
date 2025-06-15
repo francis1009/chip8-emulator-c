@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <SDL3/SDL.h>
 
@@ -43,6 +44,7 @@ int main(int argc, char **argv) {
 	while (is_running) {
 		Uint64 frame_start_time = SDL_GetTicks();
 
+		memcpy(chip8.key_prev, chip8.key, sizeof(chip8.key));
 		process_input(&chip8, &is_running);
 		for (int i = 0; i < CYCLES_PER_FRAME; i++) {
 			chip8_emulate_cycle(&chip8);
