@@ -2,6 +2,8 @@
 
 A simple CHIP-8 emulator written in C using the modern SDL3 library for graphics, audio, and input.
 
+![Chip-8 Emulator](images/chip8.png)
+
 ---
 
 ## About The Project
