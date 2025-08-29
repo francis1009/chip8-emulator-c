@@ -44,31 +44,18 @@ A C toolchain, the SDL3 development library, and Bear must be installed.
   ```sh
   sudo pacman -S clang base-devel sdl3 bear
   ```
-- **On Debian/Ubuntu:**
-  _(Note: SDL3 may require building from source or using a PPA if not in the main repositories.)_
+- **On Debian/Ubuntu or Windows(WSL2):**
+  _(Note: SDL3 will require building from source or using a PPA if not in the main repositories.)_
   ```sh
-  sudo apt-get install clang build-essential libsdl3-dev bear
+  sudo apt-get install clang build-essential bear git cmake
+  git clone https://github.com/libsdl-org/SDL.git
+  cd SDL
+  mkdir build
+  cd build
+  CC=clang CXX=clang++ cmake ..
+  make
+  sudo make install
   ```
-
-#### Windows
-
-The recommended way to set up a development environment on Windows is with **MSYS2**.
-
-1.  **Install MSYS2:** Download and install MSYS2 from the [official website](https://www.msys2.org/).
-
-2.  **Open the MSYS2 MINGW64 Terminal:** From the Start Menu, launch the "MSYS2 MINGW64" shell (not the default "MSYS2 MSYS").
-
-3.  **Install Development Tools:** Inside the MINGW64 terminal, use the `pacman` package manager to install the necessary toolchain, libraries, and tools.
-
-    ```sh
-    # Update package databases
-    pacman -Syu
-
-    # Install the Mingw-w64 toolchain (includes clang, make, etc.) and SDL3
-    pacman -S --needed mingw-w64-x86_64-toolchain mingw-w64-x86_64-clang mingw-w64-x86_64-sdl3 mingw-w64-x86_64-bear
-    ```
-
-All subsequent commands should be run from within the **MSYS2 MINGW64 terminal**.
 
 ### Building the Project
 
